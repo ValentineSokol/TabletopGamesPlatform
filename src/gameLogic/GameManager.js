@@ -25,9 +25,9 @@ export default class GameManager {
     movingSide = 'white';
     piecesOnBoard = [
         { piece: pieces.WHITE_KING, destination: { x: 2, y: 3 } },
-        { piece: pieces.WHITE_PAWN, destination: { x: 3, y: 2 } },
+        { piece: pieces.BLACK_PAWN, destination: { x: 3, y: 2 } },
         { piece: pieces.BLACK_PAWN, destination: { x: 4, y: 1 } },
-    ];
+    ]
     isValidMove = (piece, { x, y }) => {
        if (this.isWhitePiece(piece) && this.movingSide === 'black') return false;
        if (!this.isWhitePiece(piece) && this.movingSide === 'white') return false;
@@ -35,19 +35,17 @@ export default class GameManager {
     }
     getPiece = (x, y) => this.piecesOnBoard.find(p => p.destination?.x === x && p.destination?.y === y)
     isWhitePiece = (target) => target.piece.includes('white');
-    getDiagonalCells = (x, y, diagonal, maxSteps) => {
+    getDiagonalCells = (startX, startY, diagonal, maxSteps) => {
         const result = [];
         let currentStep = 0;
-        let startX = x;
-        let startY = y;
-        while ((startX >= 0 && startX <= 7) && (startY >= 0 && startY <= 7)) {
+        let x = startX + diagonal.x;
+        let y = startY + diagonal.y;
+        while ((x >= 0 && x <= 7) && (y >= 0 && y <= 7)) {
             if (maxSteps && currentStep >= maxSteps) return result;
-            const newX = startX + diagonal.x;
-            const newY = startY + diagonal.y;
-            result.push({x: newX, y: newY});
+            result.push({ x, y });
             currentStep += 1;
-            startX += diagonal.x;
-            startY += diagonal.y;
+            x += diagonal.x;
+            y += diagonal.y;
         }
         return result;
     };
@@ -87,47 +85,60 @@ export default class GameManager {
         const kingPiece = this.isWhitePiece(piece) ? pieces.WHITE_KING : pieces.BLACK_KING;
         return { ...piece, piece: kingPiece };
     };
+    isPieceOnSameSide = (piece) => {
+        const isWhite = this.isWhitePiece(piece);
+        return (this.movingSide === 'white' && isWhite) || (this.movingSide === 'black' && !isWhite);
+    }
+    isKing = (piece) => !this.isPawn(piece);
+    getKingCaptures(cells) {
+        const result = [];
+        let currentEnemyPiece;
+        for (let i = 0; i < cells.length; i += 1) {
+            const cell = cells[i];
+            const piece = this.getPiece(cell.x, cell.y);
+            if (piece && this.isPieceOnSameSide(piece)) return result;
+            if (currentEnemyPiece && piece) return result;
+            if (piece) {
+                currentEnemyPiece = piece;
+                continue;
+            }
+            if (currentEnemyPiece) {
+                result.push({
+                    capturedPiece: currentEnemyPiece,
+                    coordinates: cell
+                });
+            }
+
+        }
+        return result;
+    }
+
     getCaptureMoves = ({x, y}) => {
         let possibleCaptures = [];
+
         for (let i = 0; i < diagonals.length; i += 1) {
             const diagonal = diagonals[i];
-            const isWhite = this.isWhitePiece(this.getPiece(x, y));
+            const piece = this.getPiece(x, y);
             const cells = this.getDiagonalCells(x, y, diagonal);
-            if (!cells.length) return possibleCaptures;
+            if (!cells.length) continue;
 
-            if (!this.isPawn(this.getPiece(x, y))) {
-                const enemyPieces = cells.filter(c => {
-                    const pieceOnCell = this.getPiece(c.x, c.y);
-                   return  pieceOnCell && (this.movingSide === 'white' ?
-                       !this.isWhitePiece(pieceOnCell)
-                       :
-                       this.isWhitePiece(pieceOnCell));
+            if (this.isKing(piece)) {
+                possibleCaptures = [...possibleCaptures, ...this.getKingCaptures(cells)];
+            }
 
-                })
-                for (let j = 0 ; j < enemyPieces.length; j += 1) {
-                    const piece = enemyPieces[j];
-                   const vacantCellsAfter = this.getDiagonalCells(piece.x, piece.y, diagonal);
-                   const [cellAfterPiece] = vacantCellsAfter;
-                   if (this.getPiece(cellAfterPiece.x, cellAfterPiece.y)) return possibleCaptures;
-                   const firstPieceInRow = vacantCellsAfter.findIndex(c => this.getPiece(c.x, c.y));
-                   possibleCaptures = [
-                       ...possibleCaptures,
-                       ...vacantCellsAfter.slice(0, firstPieceInRow).map(c => ({ capturedPiece: this.getPiece(piece.x, piece.y), coordinates: c }))
-                   ]
-                }
-            } else {
                 const [nextCell, firstCellAfterPiece] = cells;
-                if (!this.getPiece(nextCell.x, nextCell.y) || isWhite === this.isWhitePiece(this.getPiece(nextCell.x, nextCell.y))) return possibleCaptures;
-                const vacantCellsAfterPiece = cells.slice(1).filter(c => !this.getPiece(c.x, c.y));
+                const nextCellPiece = this.getPiece(nextCell.x, nextCell.y);
+                if (!nextCellPiece || this.isPieceOnSameSide(nextCellPiece)) continue;
+                const vacantCellsAfterPiece = cells.filter(c => !this.getPiece(c.x, c.y));
                 if (!vacantCellsAfterPiece.includes(firstCellAfterPiece)) continue;
                 possibleCaptures.push({
                     coordinates: firstCellAfterPiece,
                     capturedPiece: this.getPiece(nextCell.x, nextCell.y)
                 });
-            }
         }
         return possibleCaptures;
     };
+
     getAvailableMoves = (piece) => {
         if (!piece) return [];
         let result = [];
@@ -140,6 +151,7 @@ export default class GameManager {
         });
         piecesOfMovingSide.forEach(piece => {
             const possibleCapturesForPiece = this.getCaptureMoves(piece.destination);
+            console.log({ possibleCapturesForPiece })
             if (!possibleCapturesForPiece.length) return;
             totalCaptures.set(piece, possibleCapturesForPiece);
         });
@@ -165,8 +177,11 @@ export default class GameManager {
                     piece.destination.y,
                     diagonal
                 );
-                const firstPiece = cells.findIndex(c => this.getPiece(c.x, c.y));
-                const movesOnDiagonal = cells.slice(0, firstPiece);
+                let movesOnDiagonal = cells;
+                const firstPieceIndex = cells.findIndex(c => this.getPiece(c.x, c.y));
+                if (firstPieceIndex !== -1) {
+                    movesOnDiagonal = cells.slice(0, firstPieceIndex);
+                }
                 moves = [...moves, ...movesOnDiagonal];
             });
         }
