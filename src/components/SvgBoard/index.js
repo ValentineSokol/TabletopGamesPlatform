@@ -1,8 +1,9 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import styled from 'styled-components';
 import Piece from "../../Piece";
 import {distanceBetweenCells, pieces} from "../../constants/board";
-import getAvailableMoves from "../../gameLogic/checkersRules";
+import GameManager from "../../gameLogic/GameManager";
+
 const BoardContainer = styled.div`
   width: 24%;
   height: 24%;
@@ -22,56 +23,35 @@ const HighlightedCell = styled.span`
   height: 13%;
   background: rgba(119, 198, 110, 0.4);
 `;
-const PossibleMove = styled.span`
-  position: absolute;
-  bottom: ${props => props.destination.y * distanceBetweenCells}%;
-  right:${props => props.destination.x * distanceBetweenCells}%;
-  width: 13%;
-  height: 13%;
+const PossibleMove = styled(HighlightedCell)`
   background: rgba(173, 216, 230, 0.4);
 `;
 const SvgBoard = () => {
+    const gameManager = useRef(new GameManager());
+
     const selectCell = (cell) => {
         highlightCell(cell, true);
         setSelectedCell(cell);
-        setAvailableMoves(getAvailableMoves(cell, boardPieces));
+        setAvailableMoves(gameManager.current.getAvailableMoves(cell, boardPieces));
     }
-    const getPieceLayout = () => {
-        const placeRow = (y, piece) => {
-            for (let x = 0; x < 8; x += 1) {
-                if ( (y % 2 === 0 && x % 2 === 1) || ( y % 2 === 1 && x % 2 === 0) ) {
-                    const cell = {
-                        piece,
-                        destination: { x, y },
-                    };
-                    result.push(cell);
-                }
-            }
-        }
-        const result = [];
-        for (let y = 0; y < 3; y += 1) {
-            placeRow(y, pieces.WHITE_PAWN);
-        }
-        for (let y = 5; y < 8; y += 1) {
-            placeRow(y, pieces.BLACK_PAWN);
-        }
-        return result;
-    };
     const [highlightedCells, setHighlightedCells] = useState([]);
     const [selectedCell, setSelectedCell] = useState(null);
     const [availableMoves, setAvailableMoves] = useState([]);
-    const [boardPieces, setBoardPieces] = useState(getPieceLayout());
+    const [boardPieces, setBoardPieces] = useState(gameManager.current.piecesOnBoard);
+    useEffect(() => {
+        const availableCaptures = gameManager.current.getAvailableMoves(selectedCell, boardPieces).filter(m => m.capturedPiece);
+        if (availableCaptures.length) setAvailableMoves(availableCaptures)
+    }, [selectedCell, boardPieces])
     const highlightCell = (cell, clearOthers ) => {
         const newHighlightedCells = clearOthers ? [cell] : [...highlightedCells, cell];
         setHighlightedCells(newHighlightedCells);
     };
     const movePiece = (move, piece = selectedCell) => {
-        let pieces = boardPieces.filter(p => p !== piece);
-        if (move.capturedPiece) {
-            pieces = pieces.filter(p => p !== move.capturedPiece);
-        }
-        setBoardPieces([...pieces, { ...selectedCell, destination: move.coordinates }]);
+        gameManager.current.move(piece, move);
+        setBoardPieces(gameManager.current.piecesOnBoard);
+        setAvailableMoves([]);
         highlightCell({ destination: move.coordinates });
+       // setSelectedCell(pieceAfterMove);
     };
     return (
         <BoardContainer>

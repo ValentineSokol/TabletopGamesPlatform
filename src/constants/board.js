@@ -18,3 +18,9 @@ export const pieces = {
     [pieces.BLACK_KING]: blackKingSvg,
     [pieces.WHITE_KING]: whiteKingSvg
 };
+export const diagonals = [
+    {x: -1, y: -1},
+    {x: 1, y: -1},
+    {x: -1, y: 1},
+    {x: 1, y: 1}
+];
