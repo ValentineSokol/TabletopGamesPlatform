@@ -1,0 +1,23 @@
+<svg
+        xmlns="http://www.w3.org/2000/svg"
+        xmlnsX="http://www.w3.org/1999/xlink"
+        shapeRendering="crispEdges"
+        viewBox="0 0 8 8"
+>
+  <g id="a">
+    <g id="b">
+      <g id="c">
+        <g id="d">
+          <path id="e" fill="#f0d9b5" d="M0 0H1V1H0z"></path>
+          <use x="1" y="1" href="#e" xHref="#e"></use>
+          <path id="f" fill="#b58863" d="M0 1H1V2H0z"></path>
+          <use x="1" y="-1" href="#f" xHref="#f"></use>
+        </g>
+        <use x="2" href="#d" xHref="#d"></use>
+      </g>
+      <use x="4" href="#c" xHref="#c"></use>
+    </g>
+    <use y="2" href="#b" xHref="#b"></use>
+  </g>
+  <use y="4" href="#a" xHref="#a"></use>
+</svg>
