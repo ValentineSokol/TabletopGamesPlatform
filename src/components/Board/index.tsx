@@ -3,7 +3,13 @@ import styled from 'styled-components';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import BoardPiece from '../Piece/Piece';
 // eslint-disable-next-line import/extensions,import/no-unresolved
-import GameManager, { Move, Position, Piece } from '../../gameLogic/GameManager/GameManager';
+import GameManager from '../../gameLogic/GameManager/GameManager';
+// eslint-disable-next-line import/extensions,import/no-unresolved
+import { Move } from '../../gameLogic/customTypes';
+// eslint-disable-next-line import/extensions,import/no-unresolved
+import Piece from '../../gameLogic/Pieces/Piece';
+// eslint-disable-next-line import/extensions,import/no-unresolved
+import Position from '../../gameLogic/Position/Position';
 // @ts-ignore
 import { ReactComponent as BoardSvg } from '../../assets/svgs/board.svg';
 // eslint-disable-next-line import/extensions,import/no-unresolved

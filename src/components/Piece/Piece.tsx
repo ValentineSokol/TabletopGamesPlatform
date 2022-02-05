@@ -3,14 +3,16 @@ import styled from 'styled-components';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import { distanceBetweenCells, pieceGraphics } from '../../constants/board';
 // eslint-disable-next-line import/extensions,import/no-unresolved
-import * as gameEntityTypes from '../../gameLogic/GameManager/GameManager';
+import Position from '../../gameLogic/Position/Position';
+// eslint-disable-next-line import/extensions,import/no-unresolved
+import PieceType from '../../gameLogic/Pieces/Piece';
 
 interface PieceContainerProps {
-    position: gameEntityTypes.Position,
+    position: Position,
     graphics: React.ReactSVGElement
 }
 interface PieceProps {
- piece: gameEntityTypes.Piece,
+ piece: PieceType,
  select: () => void,
 
 }
