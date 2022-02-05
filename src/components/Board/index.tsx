@@ -3,7 +3,7 @@ import styled from 'styled-components';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import BoardPiece from '../Piece/Piece';
 // eslint-disable-next-line import/extensions,import/no-unresolved
-import GameManager, { Move, Position, Piece } from '../../gameLogic/GameManager';
+import GameManager, { Move, Position, Piece } from '../../gameLogic/GameManager/GameManager';
 // @ts-ignore
 import { ReactComponent as BoardSvg } from '../../assets/svgs/board.svg';
 // eslint-disable-next-line import/extensions,import/no-unresolved

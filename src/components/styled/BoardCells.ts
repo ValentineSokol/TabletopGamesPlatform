@@ -2,7 +2,7 @@ import styled from 'styled-components';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import { distanceBetweenCells } from '../../constants/board';
 // eslint-disable-next-line import/extensions,import/no-unresolved
-import { Position } from '../../gameLogic/GameManager';
+import { Position } from '../../gameLogic/GameManager/GameManager';
 
 interface HighlightedCellProps {
     position: Position

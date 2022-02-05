@@ -3,7 +3,7 @@ import styled from 'styled-components';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import { distanceBetweenCells, pieceGraphics } from '../../constants/board';
 // eslint-disable-next-line import/extensions,import/no-unresolved
-import * as gameEntityTypes from '../../gameLogic/GameManager';
+import * as gameEntityTypes from '../../gameLogic/GameManager/GameManager';
 
 interface PieceContainerProps {
     position: gameEntityTypes.Position,
