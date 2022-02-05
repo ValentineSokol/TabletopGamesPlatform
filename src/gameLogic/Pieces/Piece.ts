@@ -9,8 +9,6 @@ import {
 import Position from '../Position/Position';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import Board from '../Board/Board';
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import King from './King';
 
 class Piece {
   board: Board;
@@ -23,10 +21,6 @@ class Piece {
     this.side = side;
     this.board = board;
     this.position = position;
-  }
-
-  isKing(): boolean {
-    return this instanceof King;
   }
 
   isWhite = () : boolean => this.side === Side.WHITE;

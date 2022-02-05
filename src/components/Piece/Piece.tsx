@@ -6,6 +6,8 @@ import { distanceBetweenCells, pieceGraphics } from '../../constants/board';
 import Position from '../../gameLogic/Position/Position';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import PieceType from '../../gameLogic/Pieces/Piece';
+// eslint-disable-next-line import/extensions,import/no-unresolved
+import King from '../../gameLogic/Pieces/King';
 
 interface PieceContainerProps {
     position: Position,
@@ -31,7 +33,7 @@ const PieceContainer = styled.div`
 `;
 function Piece({ piece, select } : PieceProps) {
   const getPieceGraphics = () : React.ReactSVGElement => {
-    if (piece.isKing()) {
+    if (piece instanceof King) {
       return pieceGraphics[`${piece.side}King`];
     }
     return pieceGraphics[`${piece.side}Pawn`];
