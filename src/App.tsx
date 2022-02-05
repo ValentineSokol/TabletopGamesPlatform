@@ -1,11 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
-import SvgBoard from "./components/Board";
+// eslint-disable-next-line import/extensions,import/no-unresolved
+import SvgBoard from './components/Board';
 
 const AppContainer = styled.div`
   text-align: center;
 `;
-const App = () => {
+function App() {
   return (
     <AppContainer>
       <SvgBoard />

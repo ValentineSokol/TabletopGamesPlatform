@@ -1,7 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
-import {distanceBetweenCells, pieceGraphics } from "../../constants/board";
-import * as gameEntityTypes from "../../gameLogic/GameManager";
+// eslint-disable-next-line import/extensions,import/no-unresolved
+import { distanceBetweenCells, pieceGraphics } from '../../constants/board';
+// eslint-disable-next-line import/extensions,import/no-unresolved
+import * as gameEntityTypes from '../../gameLogic/GameManager';
 
 interface PieceContainerProps {
     position: gameEntityTypes.Position,
@@ -25,22 +27,20 @@ const PieceContainer = styled.div`
     background-size: cover;
     background-position: center;
 `;
-const Piece = ({ piece, select } : PieceProps) => {
-    const getPieceGraphics = () : React.ReactSVGElement => {
-        if (piece.isKing()) {
-            return pieceGraphics[`${piece.side}King`];
-        }
-        return pieceGraphics[`${piece.side}Pawn`];
+function Piece({ piece, select } : PieceProps) {
+  const getPieceGraphics = () : React.ReactSVGElement => {
+    if (piece.isKing()) {
+      return pieceGraphics[`${piece.side}King`];
     }
-    return (
-        <>
-        <PieceContainer
-            position={piece.position}
-            graphics={getPieceGraphics()}
-            onClick={select}
-        />
-        </>
-    );
+    return pieceGraphics[`${piece.side}Pawn`];
+  };
+  return (
+    <PieceContainer
+      position={piece.position}
+      graphics={getPieceGraphics()}
+      onClick={select}
+    />
+  );
 }
 
 export default Piece;

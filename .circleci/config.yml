@@ -32,6 +32,6 @@ jobs:
           command: 'npm run build'
 
       - aws-s3/copy:
-          from: ${BUILD_DIRECTORY}
+          from: '../'
           to: ${S3_DOMAIN}
           arguments: --recursive
