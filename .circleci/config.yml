@@ -1,0 +1,37 @@
+version: 2.1
+orbs:
+  node: circleci/node@4.1
+  aws-s3: circleci/aws-s3@3.0.0
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  deploy:
+    jobs:
+      - deploy
+
+jobs:
+  deploy:
+    docker:
+      - image: circleci/node:14.17.3
+    steps:
+      - run:
+          name: install-deps
+          command: 'npm install'
+
+      - run:
+          name: lint-project
+          command: 'npm run lint'
+
+      - run:
+          name: test-project
+          command: 'npm run test'
+
+      - run:
+          name: build-project
+          command: 'npm run build'
+
+      - aws-s3/copy:
+          from: ${BUILD_DIRECTORY}
+          to: ${S3_DOMAIN}
+          arguments: --recursive
