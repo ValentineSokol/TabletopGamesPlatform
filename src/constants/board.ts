@@ -7,6 +7,9 @@ import blackKingSvg from '../assets/svgs/blackKing.svg';
 // @ts-ignore
 import whiteKingSvg from '../assets/svgs/whiteKing.svg';
 
+// eslint-disable-next-line import/extensions,import/no-unresolved
+import { Diagonal } from '../gameLogic/customTypes';
+
 export const PIECE_COLORS = { white: { base: 'darkblue', top: 'blue' }, black: { base: 'darkred', top: 'red' }, king: 'gold' };
 export const PIECE_SIZES = { base: '50%', top: '35%', king: '15%' };
 export const distanceBetweenCells = 12.5; // %
@@ -22,7 +25,7 @@ export const pieceGraphics = {
   [pieces.BLACK_KING]: blackKingSvg,
   [pieces.WHITE_KING]: whiteKingSvg,
 };
-export const diagonals = [
+export const diagonals : Diagonal[] = [
   { x: -1, y: -1 },
   { x: 1, y: -1 },
   { x: -1, y: 1 },

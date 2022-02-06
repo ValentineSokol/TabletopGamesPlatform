@@ -1,11 +1,9 @@
 // eslint-disable-next-line import/extensions,import/no-unresolved
-import GameManager from '../GameManager/GameManager';
-// eslint-disable-next-line import/extensions,import/no-unresolved
 import Position from '../Position/Position';
 import {
   Side,
   Diagonal,
-  Move,
+  Move, GameOutcome,
 // eslint-disable-next-line import/extensions,import/no-unresolved
 } from '../customTypes';
 // eslint-disable-next-line import/extensions,import/no-unresolved
@@ -14,20 +12,113 @@ import Piece from '../Pieces/Piece';
 import King from '../Pieces/King';
 
 class Board {
-  gameManager: GameManager;
+  private movingSide: Side = Side.WHITE;
 
-  pieces: Piece[] = [];
+  private pieces: Piece[] = [];
 
-  constructor(gameManager: GameManager) {
-    this.gameManager = gameManager;
+  constructor() {
     this.setup();
   }
 
-  piecesForSide(side: Side) : Piece[] {
+  public getPieces() : ReadonlyArray<Piece> {
+    return this.pieces;
+  }
+
+  public selectPiece(piece: Piece) : Move[] {
+    if (piece.side !== this.movingSide) return [];
+    const captures = this.pendingCapturesForSide();
+    if (captures.length) return captures;
+    return piece.getAvailableMoves();
+  }
+
+  public getPieceAtPosition(position: Position): Piece | undefined {
+    return this.pieces.find(
+      (piece) => piece.position.x === position.x && piece.position.y === position.y,
+    );
+  }
+
+  public move(move: Move) {
+    let chainCaptures : Move[] = [];
+    const movingPiece = this.getPieceAtPosition(move.from);
+    if (!movingPiece || movingPiece?.side !== this.movingSide) return {};
+
+    this.movePiece(move);
+    if (Board.hasPiecePromoted(movingPiece)) this.promotePiece(movingPiece);
+
+    if (move.capturedPiecePosition) {
+      const capturedPiece = this.getPieceAtPosition(move.capturedPiecePosition);
+      if (capturedPiece) {
+        this.removePiece(capturedPiece);
+        chainCaptures = movingPiece.getAvailableCaptures();
+      }
+    }
+    if (!chainCaptures.length) {
+      this.finishMove();
+    }
+    return { movedPiece: movingPiece, hasChainCaptures: chainCaptures.length };
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  public getDiagonal = (
+    startPosition: Position,
+    diagonal: Diagonal,
+    maxSteps: number = Infinity,
+  ) : Position[] => {
+    const result = [];
+    let currentStep = 0;
+    let currentX = startPosition.x + diagonal.x;
+    let currentY = startPosition.y + diagonal.y;
+    while (Position.isValid(currentX, currentY)) {
+      if (maxSteps !== Infinity && currentStep >= maxSteps) return result;
+      result.push(new Position(currentX, currentY));
+      currentStep += 1;
+      currentX += diagonal.x;
+      currentY += diagonal.y;
+    }
+    return result;
+  };
+
+  private isGameOver() : GameOutcome {
+    const remainingWhitePieces = this.piecesForSide(Side.WHITE);
+    const remainingBlackPieces = this.piecesForSide(Side.BLACK);
+
+    if (
+      remainingWhitePieces.length <= 0
+        && remainingBlackPieces.length
+    ) return GameOutcome.BLACK_VICTORY;
+    if (
+      remainingBlackPieces.length <= 0
+        && remainingWhitePieces.length
+    ) return GameOutcome.WHITE_VICTORY;
+    if (
+      remainingWhitePieces.length <= 0
+        && remainingBlackPieces.length <= 0
+    ) return GameOutcome.DRAW;
+
+    const remainingWhiteMoves = [
+      ...this.pendingCapturesForSide(Side.WHITE),
+      ...this.possibleMovesForSide(Side.WHITE),
+    ];
+    const remainingBlackMoves = [
+      ...this.pendingCapturesForSide(Side.BLACK),
+      ...this.possibleMovesForSide(Side.BLACK),
+    ];
+
+    if (this.movingSide === Side.WHITE && !remainingWhiteMoves.length) {
+      return GameOutcome.BLACK_VICTORY;
+    }
+    if (this.movingSide === Side.BLACK && !remainingBlackMoves.length) {
+      return GameOutcome.WHITE_VICTORY;
+    }
+
+    return GameOutcome.PENDING;
+  }
+
+  private piecesForSide(side: Side) : Piece[] {
     return this.pieces.filter((piece) => piece.side === side);
   }
 
-  possibleMovesForSide(side: Side) : Move[] {
+  private possibleMovesForSide(side: Side) : Move[] {
     let result : Move[] = [];
     const pieces = this.piecesForSide(side);
     pieces.forEach((piece) => {
@@ -36,7 +127,7 @@ class Board {
     return result;
   }
 
-  pendingCapturesForSide(side: Side = this.gameManager.movingSide): Move[] {
+  private pendingCapturesForSide(side: Side = this.movingSide): Move[] {
     let result : Move[] = [];
     const pieces = this.piecesForSide(side);
     pieces.forEach((piece) => {
@@ -45,7 +136,7 @@ class Board {
     return result;
   }
 
-  setup = () => {
+  private setup = () => {
     function isBlackCell(x: number, y: number) {
       return (y % 2 === 0 && x % 2 === 1) || (y % 2 === 1 && x % 2 === 0);
     }
@@ -66,41 +157,7 @@ class Board {
     }
   };
 
-  selectPiece(piece: Piece) : Move[] {
-    if (piece.side !== this.gameManager.movingSide) return [];
-    const captures = this.pendingCapturesForSide();
-    if (captures.length) return captures;
-    return piece.getAvailableMoves();
-  }
-
-  getPieceAtPosition(position: Position): Piece | undefined {
-    return this.pieces.find(
-      (piece) => piece.position.x === position.x && piece.position.y === position.y,
-    );
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  getDiagonal = (
-    startPosition: Position,
-    diagonal: Diagonal,
-    maxSteps: number = Infinity,
-  ) : Position[] => {
-    const result = [];
-    let currentStep = 0;
-    let currentX = startPosition.x + diagonal.x;
-    let currentY = startPosition.y + diagonal.y;
-    while (Position.isValid(currentX, currentY)) {
-      if (maxSteps !== Infinity && currentStep >= maxSteps) return result;
-      result.push(new Position(currentX, currentY));
-      currentStep += 1;
-      currentX += diagonal.x;
-      currentY += diagonal.y;
-    }
-    return result;
-  };
-
-  // eslint-disable-next-line class-methods-use-this
-  hasPiecePromoted(piece: Piece) : boolean {
+  private static hasPiecePromoted(piece: Piece) : boolean {
     if (!piece) return false;
     const { position } = piece;
     return (piece.isWhite() && position.y === 7) || (piece.isBlack() && position.y === 0);
@@ -121,23 +178,8 @@ class Board {
     this.pieces.push(new King(target.side, this, target.position));
   }
 
-  move(move: Move) {
-    let chainCaptures = [];
-    const movingPiece = this.getPieceAtPosition(move.from);
-
-    if (!movingPiece) return {};
-
-    this.movePiece(move);
-    if (this.hasPiecePromoted(movingPiece)) this.promotePiece(movingPiece);
-
-    if (move.capturedPiecePosition) {
-      const capturedPiece = this.getPieceAtPosition(move.capturedPiecePosition);
-      if (capturedPiece) {
-        this.removePiece(capturedPiece);
-        chainCaptures = movingPiece.getAvailableCaptures();
-      }
-    }
-    return { movedPiece: movingPiece, hasChainCaptures: chainCaptures.length };
+  private finishMove() {
+    this.movingSide = this.movingSide === Side.WHITE ? Side.BLACK : Side.WHITE;
   }
 }
 

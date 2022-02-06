@@ -3,7 +3,7 @@ import styled from 'styled-components';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import BoardPiece from '../Piece/Piece';
 // eslint-disable-next-line import/extensions,import/no-unresolved
-import GameManager from '../../gameLogic/GameManager/GameManager';
+import GameManager from '../../gameLogic/Board/Board';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import { Move } from '../../gameLogic/customTypes';
 // eslint-disable-next-line import/extensions,import/no-unresolved
@@ -30,7 +30,7 @@ function Board() {
   const gameManager = useRef(new GameManager());
   const [highlightedCells, setHighlightedCells] = useState<Position[]>([]);
   const [availableMoves, setAvailableMoves] = useState<Move[]>([]);
-  const [boardPieces, setBoardPieces] = useState<Piece[]>(gameManager.current.board.pieces);
+  const [boardPieces, setBoardPieces] = useState<readonly Piece[]>(gameManager.current.getPieces());
 
   const clearHighlightedCells = () => setHighlightedCells([]);
   const highlightCell = (position: Position) => {
@@ -39,13 +39,13 @@ function Board() {
     setHighlightedCells(newHighlightedCells);
   };
   const selectPiece = (piece : Piece) => {
-    const moves = gameManager.current.board.selectPiece(piece);
-    moves.forEach((move) => highlightCell(move.from));
+    const moves = gameManager.current.selectPiece(piece);
+    moves.forEach((move : Move) => highlightCell(move.from));
     setAvailableMoves(moves);
   };
   const movePiece = (move: Move) => {
     const { hasChainCaptures, movedPiece } = gameManager.current.move(move);
-    setBoardPieces(gameManager.current.board.pieces);
+    setBoardPieces(gameManager.current.getPieces());
     setAvailableMoves([]);
     clearHighlightedCells();
     if (!hasChainCaptures || !movedPiece) return;

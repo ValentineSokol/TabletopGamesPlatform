@@ -48,12 +48,12 @@ class Piece {
     const result = [];
     for (let i = 0; i < diagonals.length; i += 1) {
       const diagonal = diagonals[i];
-      const cells = this.board.getDiagonal(this.position, diagonal as Diagonal);
+      const cells = this.board.getDiagonal(this.position, diagonal);
       if (cells.length) {
         const [nextCell, firstCellAfterPiece] = cells;
         const nextCellPiece = this.board.getPieceAtPosition(nextCell);
-        if (nextCellPiece && nextCellPiece?.side === this.side) {
-          if (firstCellAfterPiece && this.board.getPieceAtPosition(firstCellAfterPiece)) {
+        if (nextCellPiece && nextCellPiece?.side !== this.side) {
+          if (firstCellAfterPiece && !this.board.getPieceAtPosition(firstCellAfterPiece)) {
             result.push({
               from: this.position,
               to: firstCellAfterPiece,
