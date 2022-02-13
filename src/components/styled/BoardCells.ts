@@ -1,9 +1,6 @@
 import styled from 'styled-components';
-// eslint-disable-next-line import/extensions,import/no-unresolved,import/no-duplicates
 import { distanceBetweenCells } from '../../constants/board';
-// eslint-disable-next-line import/extensions,import/no-unresolved
 import Position from '../../gameLogic/Position/Position';
-// eslint-disable-next-line import/extensions,import/no-unresolved
 import { Side } from '../../gameLogic/customTypes';
 
 interface HighlightedCellProps {

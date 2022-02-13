@@ -1,13 +1,9 @@
-// eslint-disable-next-line import/extensions,import/no-unresolved
 import { diagonals } from '../../constants/board';
 import {
-  Diagonal, Move, Side,
-// eslint-disable-next-line import/extensions,import/no-unresolved
+  Diagonal, Side,
 } from '../customTypes';
-
-// eslint-disable-next-line import/extensions,import/no-unresolved
 import Position from '../Position/Position';
-// eslint-disable-next-line import/extensions,import/no-unresolved
+import Move from '../Move/Move';
 import Board from '../Board/Board';
 
 class Piece {
@@ -38,13 +34,28 @@ class Piece {
       const vacantCells = diagonalCells.filter(
         (position) => !this.board.getPieceAtPosition(position),
       );
-      const validMoves = vacantCells.map((position) => ({ from: this.position, to: position }));
+      const validMoves = vacantCells.map(
+        (position) => new Move(this.board, this.position, position),
+      );
       result = [...result, ...validMoves];
     });
     return result;
   };
 
+  checkActiveCaptureChain() {
+    const lastMoveInCaptureChain = this.board.getLastMoveInCaptureChain();
+    let movedPiece;
+    if (lastMoveInCaptureChain) {
+      movedPiece = this.board.getPieceAtPosition(lastMoveInCaptureChain.to);
+    }
+    if (movedPiece === this) return;
+    // eslint-disable-next-line consistent-return
+    return movedPiece?.getAvailableCaptures();
+  }
+
   getAvailableCaptures() : Move[] {
+    const activeCaptureChainMoves = this.checkActiveCaptureChain();
+    if (activeCaptureChainMoves) return activeCaptureChainMoves;
     const result = [];
     for (let i = 0; i < diagonals.length; i += 1) {
       const diagonal = diagonals[i];
@@ -54,11 +65,8 @@ class Piece {
         const nextCellPiece = this.board.getPieceAtPosition(nextCell);
         if (nextCellPiece && nextCellPiece?.side !== this.side) {
           if (firstCellAfterPiece && !this.board.getPieceAtPosition(firstCellAfterPiece)) {
-            result.push({
-              from: this.position,
-              to: firstCellAfterPiece,
-              capturedPiecePosition: nextCell,
-            });
+            const move = new Move(this.board, this.position, firstCellAfterPiece, nextCell);
+            result.push(move);
           }
         }
       }

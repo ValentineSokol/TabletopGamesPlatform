@@ -1,26 +1,29 @@
-// eslint-disable-next-line import/extensions,import/no-unresolved
 import { diagonals } from '../../constants/board';
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import { Diagonal, Move } from '../customTypes';
-// eslint-disable-next-line import/extensions,import/no-unresolved
+import { Diagonal } from '../customTypes';
 import Piece from './Piece';
+import Move from '../Move/Move';
 
 class King extends Piece {
   getAvailableMoves = (): Move[] => {
     let result: Move[] = [];
     diagonals.forEach((diagonal) => {
       const cells = this.board.getDiagonal(this.position, diagonal as Diagonal);
-      let movesOnDiagonal = cells;
+      let validDestinations = cells;
       const firstPieceIndex = cells.findIndex((cell) => this.board.getPieceAtPosition(cell));
       if (firstPieceIndex !== -1) {
-        movesOnDiagonal = cells.slice(0, firstPieceIndex);
+        validDestinations = cells.slice(0, firstPieceIndex);
       }
-      result = [...result, ...movesOnDiagonal.map((move) => ({ from: this.position, to: move }))];
+      const availableMoves = validDestinations.map(
+        (move) => new Move(this.board, this.position, move),
+      );
+      result = [...result, ...availableMoves];
     });
     return result;
   };
 
   getAvailableCaptures = (): Move[] => {
+    const activeCaptureChainMoves = this.checkActiveCaptureChain();
+    if (activeCaptureChainMoves) return activeCaptureChainMoves;
     const result : Move[] = [];
     diagonals.forEach((diagonal) => {
       const cells = this.board.getDiagonal(this.position, diagonal as Diagonal);
@@ -35,11 +38,8 @@ class King extends Piece {
         if (pieceOnCell) {
           currentEnemyPiece = pieceOnCell;
         } else if (currentEnemyPiece) {
-          result.push({
-            capturedPiecePosition: currentEnemyPiece.position,
-            from: this.position,
-            to: cell,
-          });
+          const capture = new Move(this.board, this.position, cell, currentEnemyPiece.position);
+          result.push(capture);
         }
       }
     });

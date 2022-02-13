@@ -1,20 +1,20 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import styled from 'styled-components';
-// eslint-disable-next-line import/extensions,import/no-unresolved
 import BoardPiece from '../Piece/Piece';
-// eslint-disable-next-line import/extensions,import/no-unresolved
+import MoveHistory from '../MoveHistory/MoveHistory';
 import GameManager from '../../gameLogic/Board/Board';
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import { Move, Side } from '../../gameLogic/customTypes';
-// eslint-disable-next-line import/extensions,import/no-unresolved
+import { Side } from '../../gameLogic/customTypes';
 import Piece from '../../gameLogic/Pieces/Piece';
-// eslint-disable-next-line import/extensions,import/no-unresolved
 import Position from '../../gameLogic/Position/Position';
+import Move from '../../gameLogic/Move/Move';
 // @ts-ignore
 import { ReactComponent as BoardSvg } from '../../assets/svgs/board.svg';
-// eslint-disable-next-line import/extensions,import/no-unresolved
 import { HighlightedCell, PossibleMove } from '../styled/BoardCells';
 
+const Container = styled.div`
+  display: flex;
+  justify-content: center;
+`;
 const BoardBorder = styled.div`
   width: 25%;
   height: 25%;
@@ -35,10 +35,21 @@ const BoardContainer = styled.div`
 `;
 function Board() {
   const gameManager = useRef(new GameManager());
+  const ws = useRef<WebSocket | null>(null);
   const [highlightedCells, setHighlightedCells] = useState<{ position: Position, side: Side}[]>([]);
   const [availableMoves, setAvailableMoves] = useState<Move[]>([]);
   const [boardPieces, setBoardPieces] = useState<readonly Piece[]>(gameManager.current.getPieces());
 
+  useEffect(() => {
+    ws.current = new WebSocket('ws://localhost:5000/game');
+    ws.current.onmessage = (e) => {
+      const message = JSON.parse(e.data);
+
+      if (message.type === 'move') {
+        gameManager.current.move(message.payload);
+      }
+    };
+  }, []);
   const clearHighlightedCells = () => setHighlightedCells([]);
   const highlightCell = (position: Position, side: Side) => {
     const newHighlightedCells = [...highlightedCells, { position, side }];
@@ -49,19 +60,27 @@ function Board() {
     moves.forEach((move : Move) => highlightCell(move.from, piece.side));
     setAvailableMoves(moves);
   };
+
+  function updateBoardPieces() {
+    console.log('Updating pieces');
+    setBoardPieces(gameManager.current.getPieces());
+  }
+
   const movePiece = (move: Move) => {
     const { hasChainCaptures, movedPiece } = gameManager.current.move(move);
-    setBoardPieces(gameManager.current.getPieces());
+    updateBoardPieces();
     setAvailableMoves([]);
     clearHighlightedCells();
     if (!hasChainCaptures || !movedPiece) return;
     selectPiece(movedPiece);
   };
+
   return (
-    <BoardBorder>
-      <BoardContainer>
-        <BoardSvg />
-        {
+    <Container>
+      <BoardBorder>
+        <BoardContainer>
+          <BoardSvg />
+          {
                 boardPieces.map((piece) => (
                   <BoardPiece
                     piece={piece}
@@ -69,12 +88,12 @@ function Board() {
                   />
                 ))
             }
-        {
+          {
                 highlightedCells.map(
                   (data) => <HighlightedCell position={data.position} side={data.side} />,
                 )
             }
-        {
+          {
                 availableMoves.map((move) => (
                   <PossibleMove
                     onClick={() => movePiece(move)}
@@ -83,8 +102,13 @@ function Board() {
                   />
                 ))
             }
-      </BoardContainer>
-    </BoardBorder>
+        </BoardContainer>
+      </BoardBorder>
+      <MoveHistory
+        history={gameManager.current.moveHistory}
+        updateBoardPieces={updateBoardPieces}
+      />
+    </Container>
   );
 }
 

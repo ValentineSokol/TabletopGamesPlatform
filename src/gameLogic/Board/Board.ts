@@ -1,20 +1,19 @@
-// eslint-disable-next-line import/extensions,import/no-unresolved
 import Position from '../Position/Position';
-import {
-  Side,
-  Diagonal,
-  Move, GameOutcome,
-// eslint-disable-next-line import/extensions,import/no-unresolved
-} from '../customTypes';
-// eslint-disable-next-line import/extensions,import/no-unresolved
+import { Diagonal, GameOutcome, Side } from '../customTypes';
 import Piece from '../Pieces/Piece';
-// eslint-disable-next-line import/extensions,import/no-unresolved
 import King from '../Pieces/King';
+import Move from '../Move/Move';
+import MoveHistory from '../MoveHistory/MoveHistory';
+import ChainMove from '../ChainMove/ChainMove';
 
 class Board {
   private movingSide: Side = Side.WHITE;
 
   private pieces: Piece[] = [];
+
+  private activeCaptureChain : Move[] | null;
+
+  public readonly moveHistory : MoveHistory = new MoveHistory();
 
   constructor() {
     this.setup();
@@ -24,11 +23,21 @@ class Board {
     return this.pieces;
   }
 
+  public getMovingSide() : Side {
+    return this.movingSide;
+  }
+
   public selectPiece(piece: Piece) : Move[] {
-    if (piece.side !== this.movingSide) return [];
+    if (!this.moveHistory.isCurrentMoveLast || piece.side !== this.movingSide) return [];
     const captures = this.pendingCapturesForSide();
     if (captures.length) return captures;
     return piece.getAvailableMoves();
+  }
+
+  public getLastMoveInCaptureChain() : Move | undefined {
+    if (!this.activeCaptureChain) return;
+    // eslint-disable-next-line consistent-return
+    return this.activeCaptureChain[this.activeCaptureChain.length - 1];
   }
 
   public getPieceAtPosition(position: Position): Piece | undefined {
@@ -38,24 +47,25 @@ class Board {
   }
 
   public move(move: Move) {
-    let chainCaptures : Move[] = [];
-    const movingPiece = this.getPieceAtPosition(move.from);
-    if (!movingPiece || movingPiece?.side !== this.movingSide) return {};
-
-    this.movePiece(move);
-    if (Board.hasPiecePromoted(movingPiece)) this.promotePiece(movingPiece);
-
+    const result = move.execute();
     if (move.capturedPiecePosition) {
-      const capturedPiece = this.getPieceAtPosition(move.capturedPiecePosition);
-      if (capturedPiece) {
-        this.removePiece(capturedPiece);
-        chainCaptures = movingPiece.getAvailableCaptures();
+      if (!this.activeCaptureChain && result.hasChainCaptures) {
+        this.activeCaptureChain = [move];
+      } else if (this.activeCaptureChain) {
+        this.activeCaptureChain.push(move);
+        if (!result.hasChainCaptures) {
+          const chainMove = new ChainMove(this, this.activeCaptureChain);
+          this.moveHistory.addMove(chainMove);
+          console.log({ activeChain: this.activeCaptureChain });
+          this.activeCaptureChain = null;
+          return result;
+        }
       }
     }
-    if (!chainCaptures.length) {
-      this.finishMove();
+    if (!this.activeCaptureChain) {
+      this.moveHistory.addMove(move);
     }
-    return { movedPiece: movingPiece, hasChainCaptures: chainCaptures.length };
+    return result;
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -157,28 +167,37 @@ class Board {
     }
   };
 
-  private static hasPiecePromoted(piece: Piece) : boolean {
+  public static hasPiecePromoted(piece: Piece) : boolean {
     if (!piece) return false;
     const { position } = piece;
     return (piece.isWhite() && position.y === 7) || (piece.isBlack() && position.y === 0);
   }
 
-  private movePiece(move: Move) {
+  public movePiece(move: Move) {
     const piece = this.getPieceAtPosition(move.from);
     if (!piece) return;
     piece.position = move.to;
+    this.pieces = [...this.pieces, piece];
   }
 
-  private removePiece(target: Piece) {
+  public placePiece(newPiece: Piece) {
+    const prevPiece = this.getPieceAtPosition(newPiece.position);
+    if (prevPiece) {
+      this.removePiece(prevPiece);
+    }
+    this.pieces.push(newPiece);
+  }
+
+  public removePiece(target: Piece) {
     this.pieces = this.pieces.filter((piece) => piece !== target);
   }
 
-  private promotePiece(target: Piece) {
+  public promotePiece(target: Piece) {
     this.removePiece(target);
     this.pieces.push(new King(target.side, this, target.position));
   }
 
-  private finishMove() {
+  public finishMove() {
     this.movingSide = this.movingSide === Side.WHITE ? Side.BLACK : Side.WHITE;
   }
 }
