@@ -33,7 +33,6 @@ class MoveHistory {
     this.currentMoveIdx += 1;
     const nextMove = this.moves[this.currentMoveIdx];
     nextMove.execute();
-    console.log({ currentMoveIdx: this.currentMoveIdx });
   }
 
   public gotoFirstMove() {

@@ -62,7 +62,6 @@ function Board() {
   };
 
   function updateBoardPieces() {
-    console.log('Updating pieces');
     setBoardPieces(gameManager.current.getPieces());
   }
 

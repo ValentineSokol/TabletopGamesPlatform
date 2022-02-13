@@ -56,7 +56,6 @@ class Board {
         if (!result.hasChainCaptures) {
           const chainMove = new ChainMove(this, this.activeCaptureChain);
           this.moveHistory.addMove(chainMove);
-          console.log({ activeChain: this.activeCaptureChain });
           this.activeCaptureChain = null;
           return result;
         }
