@@ -27,5 +27,8 @@ module.exports = {
     'react/prop-types': 0,
     'import/extensions': 0,
     'import/no-unresolved': 0,
+    'linebreak-style': 0,
+    'react/jsx-indent': 0,
+    'jsx-a11y/label-has-associated-control': 0
   },
 };

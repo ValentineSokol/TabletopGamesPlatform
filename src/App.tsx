@@ -1,7 +1,8 @@
 import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import SvgBoard from './components/Board';
+import Navbar from './components/Navbar';
+import AppRoutes from './components/AppRoutes';
 
 const Background = createGlobalStyle`
  body {
@@ -16,8 +17,11 @@ const AppContainer = styled.div`
 function App() {
   return (
     <AppContainer>
-      <Background />
-      <SvgBoard />
+      <Router>
+        <Navbar />
+        <AppRoutes />
+        <Background />
+      </Router>
     </AppContainer>
   );
 }
