@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import MoveHistory from '../../gameLogic/MoveHistory/MoveHistory';
+import { MoveHistory } from 'checkersrules';
 
 const Container = styled.div`
  color: white; 

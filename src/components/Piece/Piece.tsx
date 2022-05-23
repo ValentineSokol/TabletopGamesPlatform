@@ -1,15 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
-// eslint-disable-next-line import/extensions,import/no-unresolved,import/no-duplicates
+import {
+  Position,
+  Side,
+  King,
+  Piece as PieceType,
+} from 'checkersrules';
 import { distanceBetweenCells, pieceGraphics } from '../../constants/board';
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import Position from '../../gameLogic/Position/Position';
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import PieceType from '../../gameLogic/Pieces/Piece';
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import King from '../../gameLogic/Pieces/King';
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import { Side } from '../../gameLogic/customTypes';
 
 interface PieceContainerProps {
     position: Position,

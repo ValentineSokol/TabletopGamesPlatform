@@ -1,3 +1,4 @@
+import { Diagonal, Side } from 'checkersrules';
 // @ts-ignore
 import blackPawnSvg from '../assets/svgs/blackPawn.svg';
 // @ts-ignore
@@ -6,9 +7,6 @@ import whitePawnSvg from '../assets/svgs/whitePawn.svg';
 import blackKingSvg from '../assets/svgs/blackKing.svg';
 // @ts-ignore
 import whiteKingSvg from '../assets/svgs/whiteKing.svg';
-
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import { Diagonal, Side } from '../gameLogic/customTypes';
 
 export const distanceBetweenCells = 12.5; // %
 export const pieces = {

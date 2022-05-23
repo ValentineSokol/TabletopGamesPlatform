@@ -1,12 +1,13 @@
 import React, { useRef, useState, useEffect } from 'react';
 import styled from 'styled-components';
+import GameManager, {
+  Position,
+  Move,
+  Side,
+  Piece,
+} from 'checkersrules';
 import BoardPiece from '../Piece/Piece';
 import MoveHistory from '../MoveHistory/MoveHistory';
-import GameManager from '../../gameLogic/Board/Board';
-import { Side } from '../../gameLogic/customTypes';
-import Piece from '../../gameLogic/Pieces/Piece';
-import Position from '../../gameLogic/Position/Position';
-import Move from '../../gameLogic/Move/Move';
 // @ts-ignore
 import { ReactComponent as BoardSvg } from '../../assets/svgs/board.svg';
 import { HighlightedCell, PossibleMove } from '../styled/BoardCells';
@@ -41,7 +42,7 @@ function Board() {
   const [boardPieces, setBoardPieces] = useState<readonly Piece[]>(gameManager.current.getPieces());
 
   useEffect(() => {
-    ws.current = new WebSocket('ws://localhost:5000/game');
+    ws.current = new WebSocket('ws://localhost:4000/games/realtime-server');
     ws.current.onmessage = (e) => {
       const message = JSON.parse(e.data);
 

@@ -1,7 +1,6 @@
 import styled from 'styled-components';
+import { Position, Side } from 'checkersrules';
 import { distanceBetweenCells } from '../../constants/board';
-import Position from '../../gameLogic/Position/Position';
-import { Side } from '../../gameLogic/customTypes';
 
 interface HighlightedCellProps {
     position: Position
